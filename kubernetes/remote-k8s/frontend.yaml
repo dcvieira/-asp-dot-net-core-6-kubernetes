@@ -1,28 +1,37 @@
-#Frontend service
+
 kind: Service
 apiVersion: v1
 metadata:
   name: frontend
+  namespace: globoticket
   labels:
     app: frontend
+    release: prometheus-operator
 spec:
   selector:
     app: frontend
   ports:
-  - protocol: TCP
+  - name: website
+    protocol: TCP
     port: 8080
     targetPort: 80
   type: LoadBalancer
+
 ---
-#Frontend deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
+  namespace: globoticket
   labels:
     app: frontend
 spec:
-  replicas: 1
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: frontend
@@ -33,7 +42,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: dgopsgloboticket.azurecr.io/frontend
+        image: dgopsgloboticket.azurecr.io/frontend:#{Build.BuildId}#
         resources:
           requests:
             memory: "500Mi"
@@ -51,3 +60,21 @@ spec:
         ports:
         - containerPort: 80
         imagePullPolicy: Always
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 20
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /health/lively
+            port: 80
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 10
+          failureThreshold: 3
+      imagePullSecrets:
+        - name: acr-secret

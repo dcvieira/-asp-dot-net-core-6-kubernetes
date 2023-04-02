@@ -2,6 +2,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: sqlserver
+  namespace: globoticket
   labels:
     app: sqlserver
 spec:
@@ -11,13 +12,15 @@ spec:
   - protocol: TCP
     port: 1433
     targetPort: 1433
-    name: http
+    appProtocol: tcp
+    name: tds
   type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: sqlserver
+  namespace: globoticket
   labels:
     app: sqlserver
 spec:
@@ -27,6 +30,8 @@ spec:
       app: sqlserver
   template:
     metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
       labels:
         app: sqlserver
     spec:

@@ -51,7 +51,7 @@ jobs:
     - name: Replace tokens
       uses: cschleiden/replace-tokens@v1.0
       with:
-        files: ${{github.workspace}}/demos/remote-k8s/deployment-automation/${{env.deploymentFile}}
+        files: ${{github.workspace}}/demos/remote-k8s/${{env.deploymentFile}}
       env: 
         Build.BuildId: ${{github.run_number}}
     - name: Upload a Build Artifact

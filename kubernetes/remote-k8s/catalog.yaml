@@ -2,22 +2,25 @@ kind: Service
 apiVersion: v1
 metadata:
   name: catalog
+  namespace: globoticket
   labels:
     app: catalog
+    release: prometheus-operator
 spec:
   selector:
     app: catalog
   ports:
-  - protocol: TCP
+  - name: api2
+    protocol: TCP
     port: 8080
     targetPort: 80
-    name: http
   type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: catalog
+  namespace: globoticket
   labels:
     app: catalog
 spec:
@@ -32,7 +35,7 @@ spec:
     spec:
       containers:
       - name: catalog
-        image: dgopsgloboticket.azurecr.io/catalog
+        image: dgopsgloboticket.azurecr.io/catalog:#{Build.BuildId}#
         resources:
           requests:
             memory: "500Mi"
@@ -44,7 +47,12 @@ spec:
         - name: ASPNETCORE_ENVIRONMENT
           value: Development
         - name: CONNECTIONSTRINGS__DEFAULTCONNECTION
-          value: Server=sqlserver;Database=EventCatalogDb;User=sa;pwd=P@ssW0rd!;MultipleActiveResultSets=true
+          valueFrom:
+            secretKeyRef:
+              name: catalog-db
+              key: connectionstring
         ports:
         - containerPort: 80
         imagePullPolicy: Always
+      imagePullSecrets:
+        - name: acr-secret

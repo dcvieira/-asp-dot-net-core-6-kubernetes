@@ -2,13 +2,16 @@ kind: Service
 apiVersion: v1
 metadata:
   name: ordering
+  namespace: globoticket
   labels:
     app: ordering
+    release: prometheus-operator
 spec:
   selector:
     app: ordering
   ports:
-  - protocol: TCP
+  - name: api
+    protocol: TCP
     port: 8080
     targetPort: 80
   type: ClusterIP
@@ -17,6 +20,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ordering
+  namespace: globoticket
   labels:
     app: ordering
 spec:
@@ -26,12 +30,13 @@ spec:
       app: ordering
   template:
     metadata:
+      namespace: globoticket
       labels:
         app: ordering
     spec:
       containers:
       - name: ordering
-        image: dgopsgloboticket.azurecr.io/ordering
+        image: dgopsgloboticket.azurecr.io/ordering:#{Build.BuildId}#
         resources:
           requests:
             memory: "500Mi"
@@ -45,3 +50,5 @@ spec:
         ports:
         - containerPort: 80
         imagePullPolicy: Always
+      imagePullSecrets:
+        - name: acr-secret

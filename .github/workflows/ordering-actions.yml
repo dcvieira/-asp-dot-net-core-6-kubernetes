@@ -58,7 +58,7 @@ jobs:
       uses: actions/upload-artifact@v2.2.4
       with:
         name: deployfile
-        path: ${{github.workspace}}/demos/remote-k8s/deployment-automation/${{env.deploymentFile}}
+        path: ${{github.workspace}}/kubernetes/remote-k8s/${{env.deploymentFile}}
         
   deploy:
     runs-on: ubuntu-latest
